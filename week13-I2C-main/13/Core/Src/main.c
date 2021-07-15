@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
- ******************************************************************************
+ ****************************************************************************
  * @file           : main.c
  * @brief          : Main program body
- ******************************************************************************
+ ****************************************************************************
  * @attention
  *
  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
@@ -14,7 +14,7 @@
  * License. You may obtain a copy of the License at:
  *                        opensource.org/licenses/BSD-3-Clause
  *
- ******************************************************************************
+ ****************************************************************************
  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -51,10 +51,12 @@ uint8_t eepromExampleWriteFlag = 0;
 uint8_t eepromExampleReadFlag = 0;
 uint8_t IOExpdrExampleWriteFlag = 0;
 uint8_t IOExpdrExampleReadFlag = 0;
-uint8_t eepromDataReadBack;
+uint8_t eepromDataReadBack[1];
 uint8_t IOExpdrDataReadBack;
 uint8_t IOExpdrDataWrite = 0b01010101;
 GPIO_PinState SwitchState[2];
+
+uint64_t counter = 0;
 
 /* USER CODE END PV */
 
@@ -65,7 +67,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 void EEPROMWriteExample(uint8_t Wdata);
-void EEPROMReadExample(uint8_t *Rdata, uint16_t len);
+void EEPROMReadExample(uint8_t *Rdata);
 
 void IOExpenderInit();
 void IOExpenderReadPinA(uint8_t *Rdata);
@@ -127,11 +129,20 @@ int main(void)
 
 		}
 		IOExpenderReadPinA(&IOExpdrDataReadBack);
-		EEPROMReadExample(eepromDataReadBack, 4);
-		IOExpenderWritePinB(eepromDataReadBack<<4);
-		if(SwitchState[0]==GPIO_PIN_RESET && SwitchState[1]==GPIO_PIN_SET&&IOExpdrDataReadBack!=eepromDataReadBack)
-			{eepromExampleWriteFlag = 1;}
-		EEPROMWriteExample(IOExpdrDataReadBack);
+		HAL_Delay(100);
+
+		if(hi2c1.State == HAL_I2C_STATE_READY)
+		{
+			if(SwitchState[0]==GPIO_PIN_RESET && SwitchState[1]==GPIO_PIN_SET&&IOExpdrDataReadBack!=eepromDataReadBack[0])
+			{eepromExampleWriteFlag = 1;
+			counter += 1;}
+			HAL_Delay(100);
+			EEPROMWriteExample(IOExpdrDataReadBack);
+			HAL_Delay(100);
+			EEPROMReadExample(eepromDataReadBack);
+			HAL_Delay(100);
+			IOExpenderWritePinB(eepromDataReadBack[0]<<4);
+		}
 		SwitchState[1]=SwitchState[0];
 
 
@@ -294,18 +305,18 @@ void EEPROMWriteExample(uint8_t Wdata) {
 		static uint8_t data;
 		data = Wdata;
 		HAL_I2C_Mem_Write_IT(&hi2c1, EEPROM_ADDR, 0x04, I2C_MEMADD_SIZE_16BIT,
-				data, 1);
+				&data, 1);
 
 
 
 		eepromExampleWriteFlag = 0;
 	}
 }
-void EEPROMReadExample(uint8_t *Rdata, uint16_t len) {
+void EEPROMReadExample(uint8_t *Rdata) {
 	if (eepromExampleReadFlag && hi2c1.State == HAL_I2C_STATE_READY) {
 
-		HAL_I2C_Mem_Read_IT(&hi2c1, EEPROM_ADDR, 0x2c, I2C_MEMADD_SIZE_16BIT,
-				Rdata, len);
+		HAL_I2C_Mem_Read_IT(&hi2c1, EEPROM_ADDR, 0x04, I2C_MEMADD_SIZE_16BIT,
+				Rdata, 1);
 		eepromExampleReadFlag = 0;
 	}
 }
