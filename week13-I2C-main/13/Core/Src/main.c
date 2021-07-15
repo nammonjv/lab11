@@ -113,10 +113,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_Delay(100);
   IOExpenderInit();
+  IOExpenderWritePinB(eepromDataReadBack[0]<<4);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
 	while (1) {
 
 
