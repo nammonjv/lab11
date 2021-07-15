@@ -54,6 +54,7 @@ uint8_t IOExpdrExampleReadFlag = 0;
 uint8_t eepromDataReadBack[4];
 uint8_t IOExpdrDataReadBack;
 uint8_t IOExpdrDataWrite = 0b01010101;
+GPIO_PinState SwitchState[2];
 
 /* USER CODE END PV */
 
@@ -117,9 +118,18 @@ int main(void)
 	while (1) {
 		EEPROMWriteExample();
 		EEPROMReadExample(eepromDataReadBack, 4);
-
 		IOExpenderReadPinA(&IOExpdrDataReadBack);
+		IOExpdrDataWrite = IOExpdrDataReadBack;
 		IOExpenderWritePinB(IOExpdrDataWrite);
+		SwitchState[0] = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
+		if(SwitchState[0]==GPIO_PIN_RESET && SwitchState[1]==GPIO_PIN_SET)
+		{
+			IOExpdrExampleReadFlag = 1;
+			IOExpdrExampleWriteFlag = 1;
+		}
+		SwitchState[1]=SwitchState[0];
+
+
 
     /* USER CODE END WHILE */
 
