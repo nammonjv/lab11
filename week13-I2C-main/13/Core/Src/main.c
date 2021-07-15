@@ -64,7 +64,7 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-void EEPROMWriteExample();
+void EEPROMWriteExample(uint8_t Xdata);
 void EEPROMReadExample(uint8_t *Rdata, uint16_t len);
 
 void IOExpenderInit();
@@ -116,11 +116,12 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-		EEPROMWriteExample();
-		EEPROMReadExample(eepromDataReadBack, 4);
+
+
 		IOExpenderReadPinA(&IOExpdrDataReadBack);
-		IOExpdrDataWrite = IOExpdrDataReadBack;
-		IOExpenderWritePinB(IOExpdrDataWrite);
+		IOExpenderWritePinB(IOExpdrDataReadBack<<4);
+		//EEPROMWriteExample();
+		//EEPROMReadExample(eepromDataReadBack, 4);
 		SwitchState[0] = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
 		if(SwitchState[0]==GPIO_PIN_RESET && SwitchState[1]==GPIO_PIN_SET)
 		{
@@ -283,12 +284,13 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void EEPROMWriteExample() {
+void EEPROMWriteExample(uint8_t Xdata) {
 	if (eepromExampleWriteFlag && hi2c1.State == HAL_I2C_STATE_READY) {
 
-		static uint8_t data[4] = { 0xff, 0x00, 0x55, 0xaa };
+		static uint8_t data;
+		data = Xdata;
 		HAL_I2C_Mem_Write_IT(&hi2c1, EEPROM_ADDR, 0x2C, I2C_MEMADD_SIZE_16BIT,
-				data, 4);
+				data, 1);
 
 
 
