@@ -113,6 +113,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_Delay(100);
   IOExpenderInit();
+  HAL_Delay(100);
+  eepromExampleReadFlag = 1;
+  EEPROMReadExample(eepromDataReadBack);
+  HAL_Delay(100);
+  IOExpdrExampleWriteFlag = 1;
   IOExpenderWritePinB(eepromDataReadBack[0]<<4);
   /* USER CODE END 2 */
 
